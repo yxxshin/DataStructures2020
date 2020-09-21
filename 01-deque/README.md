@@ -1,6 +1,6 @@
 # HW#1: Deque
 
-* **Due date: TBD**
+* **Due date: Oct 3rd, 2020, 11:59PM**
 * TA: Seonghyun Park (shpark95@snu.ac.kr)
 
 ## Goals
