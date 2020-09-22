@@ -9,3 +9,5 @@ target_include_directories(hello INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_features(hello INTERFACE cxx_std_17)
 
 add_subdirectory(tests)
+
+add_subdirectory(examples)
