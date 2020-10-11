@@ -37,8 +37,8 @@ TEST_CASE("BST insert test", "[BST]") {
     std::random_shuffle(v.begin(), v.end());
 
     for (auto ele: v) {
-        REQUIRE(bt.insert(ele));
-        REQUIRE(!bt.insert(ele));
+        REQUIRE(bt.insert(ele) == true);
+        REQUIRE(bt.insert(ele) == false);
     }
 
     std::vector<int> sorted; 
@@ -62,9 +62,9 @@ TEST_CASE("BST search test", "[BST]") {
     std::random_shuffle(v.begin(), v.end());
  
     for (auto ele: v) {
-        REQUIRE(!bt.search(ele));
+        REQUIRE(bt.search(ele) == false);
         bt.insert(ele);
-        REQUIRE(bt.search(ele));
+        REQUIRE(bt.search(ele) == true);
     }
 
     std::vector<int> sorted; 
@@ -94,8 +94,8 @@ TEST_CASE("BST remove test", "[BST]") {
     auto x = std::vector<int>(v.begin(), v.begin() + std::distance(v.begin(), v.end()) / 2);
     
     for (auto ele: x) {
-        REQUIRE(bt.remove(ele));
-        REQUIRE(!bt.remove(ele));
+        REQUIRE(bt.remove(ele) == true);
+        REQUIRE(bt.remove(ele) == false);
     }
 
     std::vector<int> sorted; 
