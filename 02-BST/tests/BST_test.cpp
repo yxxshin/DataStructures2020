@@ -90,10 +90,6 @@ TEST_CASE("BST remove test", "[BST]") {
     for (auto ele: v) 
         bt.insert(ele);
 
-    std::vector<int> sorted; 
-    is_BST(bt.root, sorted);
-    REQUIRE(std::is_sorted(sorted.begin(), sorted.end()));
-    REQUIRE(sorted.size() == v.size());
 
     auto x = std::vector<int>(v.begin(), v.begin() + std::distance(v.begin(), v.end()) / 2);
     
@@ -101,6 +97,11 @@ TEST_CASE("BST remove test", "[BST]") {
         REQUIRE(bt.remove(ele));
         REQUIRE(!bt.remove(ele));
     }
+
+    std::vector<int> sorted; 
+    is_BST(bt.root, sorted);
+    REQUIRE(std::is_sorted(sorted.begin(), sorted.end()));
+    REQUIRE(sorted.size() == v.size() - x.size());
 
 
 }
