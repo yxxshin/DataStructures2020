@@ -1,6 +1,6 @@
 # HW#2: Binary Search Tree (BST)
 
-* **Due date: 11:59pm, 10/15/2020**
+* **Due date: 11:59pm, 10/17/2020**
 * TA: Suhwan Song (sshkeb96@snu.ac.kr)
 
 ## Goals
