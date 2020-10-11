@@ -9,7 +9,7 @@
 #include <catch2/catch.hpp>
 
 template <typename T>
-void is_BST(std::unique_ptr<TreeNode<T>> &t) {
+void is_BST(std::unique_ptr<TreeNode<T>> &t, std::vector<T> &sorted) {
     if (t) {
         auto ref = t->element;
         if (t->left)
@@ -17,8 +17,9 @@ void is_BST(std::unique_ptr<TreeNode<T>> &t) {
         if (t->right)
             REQUIRE(t->right->element > ref);
  
-        is_BST(t->left);
-        is_BST(t->right);
+        is_BST(t->left, sorted);
+        sorted.push_back(ref);
+        is_BST(t->right, sorted);
     }
 
 }
@@ -39,8 +40,11 @@ TEST_CASE("BST insert test", "[BST]") {
         REQUIRE(bt.insert(ele));
         REQUIRE(!bt.insert(ele));
     }
-    
-    is_BST(bt.root);
+
+    std::vector<int> sorted; 
+    is_BST(bt.root, sorted);
+    REQUIRE(std::is_sorted(sorted.begin(), sorted.end()));
+    REQUIRE(sorted.size() == v.size());
 
 }
 
@@ -63,7 +67,10 @@ TEST_CASE("BST search test", "[BST]") {
         REQUIRE(bt.search(ele));
     }
 
-    is_BST(bt.root);
+    std::vector<int> sorted; 
+    is_BST(bt.root, sorted);
+    REQUIRE(std::is_sorted(sorted.begin(), sorted.end()));
+    REQUIRE(sorted.size() == v.size());
 
 }
 
@@ -83,6 +90,11 @@ TEST_CASE("BST remove test", "[BST]") {
     for (auto ele: v) 
         bt.insert(ele);
 
+    std::vector<int> sorted; 
+    is_BST(bt.root, sorted);
+    REQUIRE(std::is_sorted(sorted.begin(), sorted.end()));
+    REQUIRE(sorted.size() == v.size());
+
     auto x = std::vector<int>(v.begin(), v.begin() + std::distance(v.begin(), v.end()) / 2);
     
     for (auto ele: x) {
@@ -90,6 +102,5 @@ TEST_CASE("BST remove test", "[BST]") {
         REQUIRE(!bt.remove(ele));
     }
 
-    is_BST(bt.root);
 
 }
