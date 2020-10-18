@@ -138,12 +138,12 @@ to avoid null pointer dereferences.
 
 ### Testing your own programs
 
-In `05-rbtree` directory, you run the following commands to compile your own
+In `04-rbtree` directory, you run the following commands to compile your own
 implementation.
 
 ```
 $ pwd
-/xxx/xxx/xxx/05-rbtree
+/xxx/xxx/xxx/04-rbtree
 $ mkdir build
 $ cd build
 $ cmake ../
@@ -188,17 +188,16 @@ Prepare your submission with following commands:
 
 ```
 $ pwd
-05-rbtree
+04-rbtree
 $ ./prepare-submit.sh
 [*] Remove tar file...
 [*] Compress files...
-./include/deque.hpp
-./palindrome/include/palindrome.hpp
+./include/rbtree.hpp
 [*] Successfully Compressed!
 [*] Done! You are ready to submit
 ```
 
-Upload `assign5.tar.gz` to the submission server. The address of the submission
+Upload `assign4.tar.gz` to the submission server. The address of the submission
 server isn't changed since last assignment.
 
 ### Grading

@@ -209,12 +209,12 @@ A sketch of deletion algorithm will be provided during the lab session.
 
 ### Testing your own programs
 
-In `04-btree` directory, you run the following commands to compile your own
+In `03-btree` directory, you run the following commands to compile your own
 implementation.
 
 ```
 $ pwd
-/xxx/xxx/xxx/04-btree
+/xxx/xxx/xxx/03-btree
 $ mkdir build
 $ cd build
 $ cmake ../
@@ -260,17 +260,16 @@ Prepare your submission with following commands:
 
 ```
 $ pwd
-04-btree
+03-btree
 $ ./prepare-submit.sh
 [*] Remove tar file...
 [*] Compress files...
-./include/deque.hpp
-./palindrome/include/palindrome.hpp
+./include/btree.hpp
 [*] Successfully Compressed!
 [*] Done! You are ready to submit
 ```
 
-Upload `assign4.tar.gz` to the submission server. The address of the submission
+Upload `assign3.tar.gz` to the submission server. The address of the submission
 server isn't changed since last assignment.
 
 ### Grading
