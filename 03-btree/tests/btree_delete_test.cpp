@@ -14,9 +14,6 @@ TEST_CASE("Delete", "[btree]") {
 
     std::vector<int> xs, ys;
 
-    xs.resize(N);
-    ys.resize(N);
-
     for (auto i = 1; i <= N; i++) {
         xs.push_back(i);
         ys.push_back(i);
@@ -35,6 +32,38 @@ TEST_CASE("Delete", "[btree]") {
         tree.remove(i);
 
     REQUIRE(tree.root->n == 0);
+}
+
+TEST_CASE("Inorder traversal after deletion", "[btree]") {
+    BTree<int> btree;
+    std::vector<int> xs, ys, zs, ws;
+    auto N = 100'000u;
+
+    std::random_device rd;
+    std::mt19937 g(rd());
+
+    for (auto i = 1u; i <= N; i++) {
+        xs.push_back(i);
+        ys.push_back(i);
+        if (i % 2 == 0)
+            zs.push_back(i);
+    }
+
+    std::shuffle(xs.begin(), xs.end(), g);
+    std::shuffle(ys.begin(), ys.end(), g);
+
+    for (auto i : xs)
+        btree.insert(i);
+
+    /* Remove all odd numbers */
+    for (auto i : ys)
+        if (i % 2 != 0)
+            btree.remove(i);
+
+    /* In-order traversal */
+    btree.for_all([&ws](int &i){ ws.push_back(i); });
+
+    REQUIRE(zs == ws);
 }
 
 TEST_CASE("Node utilization after deletions", "[btree]") {
