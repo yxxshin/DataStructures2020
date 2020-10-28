@@ -2,34 +2,10 @@
 #include "palindrome.hpp"
 
 int main(int argc, char *argv[]) {
-    ListDeque<int> xs;
+    Palindrome<ArrayDeque<char>> p;
 
-    for (auto i = 1; i <= 10; i++) {
-        xs.push_back(i);
-        std::cout << xs << '\n';
-    }
+    std::string s{"able was I ere I saw elba"};
 
-    for (auto i = 10; i <= 20; i++) {
-        xs.push_front(i);
-        std::cout << xs << '\n';
-    }
-
-    auto np = xs.sentinel->prev;
-    while (np != xs.sentinel) {
-        std::cout << np->value.value() << ' ';
-        np = np->prev;
-    }
-    std::cout << '\n';
-
-    for (auto i = 0; i < 10; i++)
-        std::cout << xs.remove_front().value_or(-1) << '\n'
-                  << xs << '\n'
-                  << "size: " << xs.size() << '\n';
-
-    for (auto i = 0; i < 10; i++)
-        std::cout << xs.remove_back().value_or(-1) << '\n'
-                  << xs << '\n'
-                  << "size: " << xs.size() << '\n';
-
+    std::cout << p.is_palindrome(s) << '\n';
     return 0;
 }
