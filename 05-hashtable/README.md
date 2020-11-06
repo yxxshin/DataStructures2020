@@ -250,9 +250,10 @@ $ pwd
 $ ./prepare-submit.sh
 [*] Remove tar file...
 [*] Compress files...
-./include/rbtree.hpp
+./include/hash_slot.hpp
+./include/hash_table.hpp
 [*] Successfully Compressed!
-[*] Done! You are ready to submit
+[*] Done! You are ready to submit: assign5.tar.gz
 ```
 
 Upload `assign5.tar.gz` to the submission server. The address of the
