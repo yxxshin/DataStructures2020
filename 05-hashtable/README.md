@@ -138,8 +138,8 @@ You will also need to maintain two flags per slot, `_empty` and
 `_removed`: `_empty` represents that the corresponding `HashSlot` is
 empty and can be used to store a new `key`/`value` pair. `_removed`
 represents that the corresponding `HashSlot` is removed so when
-searching for a certain key, this removed `HashSlot` should be used as
-a condition to stop the search.
+searching for a certain key, this removed `HashSlot` should not be
+used as a condition to stop the search.
 
 ### Class DefaultHash
 
