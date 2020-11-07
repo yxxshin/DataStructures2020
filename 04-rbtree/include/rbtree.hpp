@@ -226,19 +226,64 @@ void RBNode<T>::flip_color() {
 template<typename T>
 RBNode<T>* RBNode<T>::rotate_right(std::unique_ptr<RBNode<T>>& n) {
     // TODO
-    return nullptr;
+    std::unique_ptr<RBNode<T>> temp = std::move(n->left);
+    n->left = std::move(temp->right);
+    temp->right = std::move(n);
+    temp->color = temp->right->color;
+    temp->right->color = RED;
+    return temp.release();
 }
 
 template<typename T>
 RBNode<T>* RBNode<T>::rotate_left(std::unique_ptr<RBNode<T>>& n) {
     // TODO
-    return nullptr;
+    std::unique_ptr<RBNode<T>> temp = std::move(n->right);
+    n->right = std::move(temp->left);
+    temp->left = std::move(n);
+    temp->color = temp->left->color;
+    temp->left->color = RED;
+    return temp.release();
 }
 
 template<typename T>
 RBNode<T>* RBNode<T>::insert(std::unique_ptr<RBNode<T>>& n, const T& t) {
     // TODO
-    return nullptr;
+    
+    // normal insertion to (any) BST
+    if(n == nullptr) {
+        n = std::make_unique<RBNode<T>>(t);
+        return n.release();
+    }
+    else if (t < n->key) {
+        std::unique_ptr<RBNode<T>> tmp(insert(n->left, t));
+        n->left = std::move(tmp);
+    }
+    else {  // t > n->key
+        std::unique_ptr<RBNode<T>> tmp(insert(n->right, t));
+        n->right = std::move(tmp);
+    }
+    
+    // Case 1 : right child is RED but left child is BLK or doesn't exist
+    if(n->right && is_red(n->right) && !is_red(n->left)){
+        // rotate_left
+        std::unique_ptr<RBNode<T>> tmp(rotate_left(n));
+        n = std::move(tmp);
+    }
+
+    // Case 2 : left child and left grand child is RED
+    if(n->left && n->left->left && is_red(n->left) && is_red(n->left->left)){
+        // rotate_right
+        std::unique_ptr<RBNode<T>> tmp(rotate_right(n));
+        n = std::move(tmp);
+    }
+
+    // Case 3 : both left and right child are RED
+    if(n->left && n->right && is_red(n->left) && is_red(n->right)){
+        // flip_color
+        n->flip_color();
+    }
+
+    return n.release();
 }
 
 template<typename T>
@@ -259,37 +304,149 @@ std::pair<RBNode<T>*, Path> RBNode<T>::search(const T& t, Path sp) {
 template<typename T>
 RBNode<T>* RBNode<T>::fix_up(std::unique_ptr<RBNode<T>>& n) {
     // TODO
-    return nullptr;
+
+    // rotate_left right-leaning REDs
+    if(n->right && is_red(n->right)) {
+        std::unique_ptr<RBNode<T>> tmp(rotate_left(n));
+        n = std::move(tmp);
+    }
+    // rotate_right RED-RED pairs
+    if(n->left && n->left->left && is_red(n->left) && is_red(n->left->left)) {
+        std::unique_ptr<RBNode<T>> tmp(rotate_right(n));
+        n = std::move(tmp);
+    }
+    // flip_color
+    if(n->left && n->right && is_red(n->left) && is_red(n->right)){
+        n->flip_color();
+    }
+    return n.release();
 }
 
 template<typename T>
 RBNode<T>* RBNode<T>::move_red_right(std::unique_ptr<RBNode<T>>& n) {
     // TODO
-    return nullptr;
+    // rotate RED links to the right
+    // borrow from sibling if necessary: when n->right and n->right->left are both BLK
+    // this two cases depend on the color of n->left->left
+    n->flip_color();
+
+    if(n->left && is_red(n->left->left)){
+        std::unique_ptr<RBNode<T>> tmp(rotate_right(n));
+        n = std::move(tmp);
+        n->flip_color();
+    }
+    return n.release();
 }
 
 template<typename T>
 RBNode<T>* RBNode<T>::remove_max(std::unique_ptr<RBNode<T>>& n) {
     // TODO
-    return nullptr;
+    
+    // lean RED child to right
+    if( n->left && is_red(n->left) ){
+        std::unique_ptr<RBNode<T>> tmp(rotate_right(n));
+        n = std::move(tmp);
+    }
+    
+    // remove node on bottom level ( must be RED )
+    if( n->right == nullptr ){
+        return nullptr;
+    }
+
+    // borrow from sibling if necessary
+    if( n->right && !is_red(n->right) && !is_red(n->right->left) ) {
+        std::unique_ptr<RBNode<T>> tmp(move_red_right(n));
+        n = std::move(tmp);
+    }
+
+    // move down one level
+    std::unique_ptr<RBNode<T>> temp(remove_max(n->right));
+    n->right = std::move(temp);
+
+    return fix_up(n);
 }
 
 template<typename T>
 RBNode<T>* RBNode<T>::move_red_left(std::unique_ptr<RBNode<T>>& n) {
     // TODO
-    return nullptr;
+    n->flip_color();
+    if (n->right->left && is_red(n->right->left)) {
+        std::unique_ptr<RBNode<T>> tmp(rotate_right(n->right));
+        n->right = std::move(tmp);
+        std::unique_ptr<RBNode<T>> temp(rotate_left(n));
+        n = std::move(temp);
+        n->flip_color();
+    }
+    return n.release();   
 }
 
 template<typename T>
 RBNode<T>* RBNode<T>::remove_min(std::unique_ptr<RBNode<T>>& n) {
     // TODO
-    return nullptr;
+    // remove node on bottom level (n must be RED)
+    if(n->left == nullptr) {
+        return nullptr;
+    }
+
+    // push red link down if necessary
+    if( n->left && !is_red(n->left) && !is_red(n->left->left)) {
+        std::unique_ptr<RBNode<T>> tmp(move_red_left(n));
+        n = std::move(tmp);
+    }
+
+    // move down one level
+    std::unique_ptr<RBNode<T>> temp(remove_min(n->left));
+    n->left = std::move(temp);
+
+    // fix right-leaning RED links, and flip_color() on the way up
+    return fix_up(n);
 }
 
 template<typename T>
 RBNode<T>* RBNode<T>::remove(std::unique_ptr<RBNode<T>>& n, const T& t) {
     // TODO
-    return nullptr;
+    // LEFT
+    if(t < n->key) {
+        // push RED right if necessary
+        if( n->left && !is_red(n->left) && !is_red(n->left->left)) {
+            std::unique_ptr<RBNode<T>> tmp(move_red_left(n));
+            n = std::move(tmp);
+        }
+        // move down
+        std::unique_ptr<RBNode<T>> temp(remove(n->left, t));
+        n->left = std::move(temp);
+        
+    }
+    // RIGHT or EQUAL
+    else {
+        // rotate to push RED right
+        if(n->left && is_red(n->left)) {
+            std::unique_ptr<RBNode<T>> tmp(rotate_right(n));
+            n = std::move(tmp);
+        }
+        // EQUAL at bottom : delete node
+        if( t == n->key && n->right == nullptr) {
+            return nullptr;
+        }
+        // push RED right if necessary
+        if(n->right && !is_red(n->right) && !is_red(n->right->left)) {
+            std::unique_ptr<RBNode<T>> tmp(move_red_right(n));
+            n = std::move(tmp);
+        }
+        // EQUAL not at bottom
+        if( t == n->key ) {
+            n->key = n->right->leftmost_key();
+            std::unique_ptr<RBNode<T>> temp(remove_min(n->right));
+            n->right = std::move(temp);
+        }
+        else {
+            // move down
+            std::unique_ptr<RBNode<T>> tmp(remove(n->right, t));
+            n->right = std::move(tmp);
+        }
+    }
+    // fix on the way up
+    return fix_up(n);
 }
 
 template<typename T>
