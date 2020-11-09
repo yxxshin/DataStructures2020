@@ -42,7 +42,6 @@ template <typename HT>
 void enlarge_insert_test(HT &htable) {
     int num_to_test = 10000;
     std::string value;
-    bool result;
 
     htable.get_table_size() == INITIAL_TABLE_SIZE;
 
@@ -71,7 +70,6 @@ template <typename HT>
 void enlarge_remove_test(HT &htable) {
     int num_to_test = 10000;
     std::string value;
-    bool result;
 
     htable.get_table_size() == INITIAL_TABLE_SIZE;
 
@@ -124,8 +122,8 @@ void rand_test(HT &htable) {
     for (auto i=0; i<=num_to_insert; i++) {
       int k = distribution(generator);
       std::string v;
-      bool res = htable.get(k, v);
-      if (res) {
+      int res = htable.get(k, v);
+      if (res >= 0) {
         REQUIRE(v == std::to_string(i));
         htable.remove(k);
       }
