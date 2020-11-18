@@ -167,7 +167,7 @@ the array. So you may over-allocate the array so as to avoid any
 runtime error issues.
 
 For instance, you can find an array with a specific
-length 4 in `Step 1`, as `log 8`(base `phi`) is 3.72....
+length 4 in `Step 1`, as `log 6`(base `phi`) is 3.72....
 
 2. Traverse the root list starting from `min_node`. Let `d` be the
 degree of the root node, where the degree is the number of all
