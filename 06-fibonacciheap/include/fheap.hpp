@@ -21,13 +21,12 @@ template <typename T>
 class FibonacciNode {
     public:
         // constructors
-        FibonacciNode()
-            :key(std::nullopt), degree(0), child(nullptr), right(nullptr) {}
+        FibonacciNode();
         FibonacciNode(const T& item)
             :key(item), degree(0), child(nullptr), right(nullptr) {}
 
         // destructor
-        ~FibonacciNode() = default;
+        ~FibonacciNode();
 
         T key;
         size_t degree;
