@@ -26,7 +26,9 @@ class FibonacciNode {
             :key(item), degree(0), child(nullptr), right(nullptr) {}
 
         // destructor
-        ~FibonacciNode();
+	// If you want to implement custom destructor, remove the default keyword
+	// and implement your custom destructor.
+        ~FibonacciNode() = default;
 
         T key;
         size_t degree;
