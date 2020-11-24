@@ -7,9 +7,8 @@
 class IntCalculator {
 public:
     int add(int t1, int t2) {
-        // TODO
-        return 0;
-    }
+        return t1 + t2;
+	}    
 };
 
 #endif // __HELLO_H_
