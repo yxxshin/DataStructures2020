@@ -19,24 +19,29 @@ public:
 
     void set_key_value(K key, V value) {
         // TODO
+        _key = key;
+        _value = value;
+        _empty = false;
     }
 
     bool is_empty() const {
-        // TODO                
-        return false;
+        // TODO               
+        return _empty;
     }
 
     void set_empty() {
-        // TODO        
+        // TODO
+        _empty = true;
     }
 
     bool is_removed() const {
         // TODO
-        return false;
+        return _removed;
     }
 
     void set_removed() {
         // TODO
+        _removed = true;
     }
     
 private:

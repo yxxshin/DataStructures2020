@@ -69,53 +69,122 @@ ArrayDeque<T>::ArrayDeque() :
 
 template <typename T>
 void ArrayDeque<T>::push_front(const T& item) {
-    // TODO
+	// TODO
+	size_++;
+	arr[front] = item;
+    if(front == 0) front = capacity_;
+    front--;   
+
+    if(size_ == capacity_ - 2)
+        resize();
 }
 
 template <typename T>
 void ArrayDeque<T>::push_back(const T& item) {
     // TODO
+    size_++;
+    arr[back] = item;
+    back++;
+	if(back == capacity_) back = 0;
+
+    if(size_ == capacity_ - 2)
+        resize();
 }
 
 template <typename T>
 std::optional<T> ArrayDeque<T>::remove_front() {
     // TODO
+	if( !empty() ){
+        size_--;
+		if(front == capacity_-1) {
+            front = 0;
+            return arr[front];
+        }
+        front++;
+		return arr[front];
+	}
     return std::nullopt;
 }
 
 template <typename T>
 std::optional<T> ArrayDeque<T>::remove_back() {
     // TODO
+    if ( !empty() ){
+        size_--;
+        if(back == 0){
+            back = capacity_-1;
+            return arr[back];
+        }
+        back--;
+        return arr[back];
+    }
     return std::nullopt;
 }
 
 template <typename T>
 void ArrayDeque<T>::resize() {
     // TODO
+    int capacity_before = capacity_;
+    capacity_ *= 2;
+
+    // make a same array brr as arr (before resizing)
+    std::unique_ptr<T[]> brr = std::make_unique<T[]>(capacity_before);
+    for(int i = 0; i < capacity_before; i++){
+        brr[i] = arr[i];
+    }
+
+    arr = std::make_unique<T[]>(capacity_);
+
+    if(front > back){
+        for(int i = front + 1; i < capacity_before; i++)
+            arr[capacity_before + i] = brr[i];
+        
+        for(int i = 0; i < back; i++)
+            arr[i] = brr[i];
+
+        front += capacity_before;
+    }
+
+    else if(front < back){
+        for(int i = front + 1; i <= back - 1; i++)
+            arr[i] = brr[i];
+    }
+
 }
 
 template <typename T>
 bool ArrayDeque<T>::empty() {
     // TODO
-    return false;
+    if(size_ == 0) return true;
+    else return false;
 }
 
 template <typename T>
 size_t ArrayDeque<T>::size() {
     // TODO
-    return 0;
+    return size_;
 }
 
 template <typename T>
 size_t ArrayDeque<T>::capacity() {
     // TODO
-    return 0;
+    return capacity_;
 }
 
 template <typename T>
 T& ArrayDeque<T>::operator[](size_t idx) {
     // TODO
-    return *new T{};
+    if(front < back){
+        return arr[front + idx + 1];
+    }
+    else{
+        if(idx >= capacity_ - front - 1){
+            return arr[idx - capacity_ + front + 1];
+        }
+        else {
+            return arr[front + idx + 1];
+        }
+    }
 }
 
 template<typename T>
@@ -157,41 +226,102 @@ ListDeque<T>::ListDeque() : sentinel(new ListNode<T>{}), size_(0) {}
 template<typename T>
 void ListDeque<T>::push_front(const T& t) {
     // TODO
+    size_++;
+    ListNode<T>* insert_node = new ListNode(t);
+
+    if(size_ == 1){
+        sentinel->prev = insert_node;
+        sentinel->next = insert_node;
+        insert_node->prev = sentinel;
+        insert_node->next = sentinel;
+    }
+    
+    else {
+        ListNode<T>* tmp = sentinel->next;
+        sentinel->next = insert_node;
+        insert_node->next = tmp;
+        insert_node->prev = sentinel;
+        tmp->prev = insert_node;   
+    }
 }
 
 template<typename T>
 void ListDeque<T>::push_back(const T& t) {
     // TODO
+    size_++;
+    ListNode<T>* insert_node = new ListNode(t);
+
+    if(size_ == 1){
+        sentinel->prev = insert_node;
+        sentinel->next = insert_node;
+        insert_node->prev = sentinel;
+        insert_node->next = sentinel;
+    }
+    
+    else {
+        ListNode<T>* tmp = sentinel->prev;
+        sentinel->prev = insert_node;
+        insert_node->next = sentinel;
+        insert_node->prev = tmp;
+        tmp->next = insert_node;
+    }
+    
 }
 
 template<typename T>
 std::optional<T> ListDeque<T>::remove_front() {
     // TODO
-    return std::nullopt;
+    if(size_ >= 1) {
+        size_--;
+        ListNode<T>* first_node = sentinel->next;
+        ListNode<T>* second_node = first_node->next;
+        sentinel->next = second_node;
+        second_node->prev = sentinel;
+        std::optional<T> val = first_node->value.value();
+        delete first_node;
+        return val;
+    }
+    else return std::nullopt;
 }
 
 template<typename T>
 std::optional<T> ListDeque<T>::remove_back() {
     // TODO
-    return std::nullopt;
+    if(size_ >= 1) {
+        size_--;
+        ListNode<T>* first_node = sentinel->prev;
+        ListNode<T>* second_node = first_node->prev;
+        sentinel->prev = second_node;
+        second_node->next = sentinel;
+        std::optional<T> val = first_node->value.value();
+        delete first_node;
+        return val;
+    }
+    else return std::nullopt;
 }
 
 template<typename T>
 bool ListDeque<T>::empty() {
     // TODO
+    if(size_ == 0) return true;
     return false;
 }
 
 template<typename T>
 size_t ListDeque<T>::size() {
     // TODO
-    return 0;
+    return size_;
 }
 
 template<typename T>
 T& ListDeque<T>::operator[](size_t idx) {
     // TODO
-    return *new T{};
+    auto temp = sentinel;
+    idx++;
+    while( idx-- ){
+        temp = temp->next;
+    }
+    return temp->value.value();
 }
 
 template<typename T>
@@ -216,6 +346,16 @@ std::ostream& operator<<(std::ostream& os, const ListDeque<T>& l) {
 template<typename T>
 ListDeque<T>::~ListDeque() {
     // TODO
+    if(!empty()){
+        ListNode<T>* deleting_node = sentinel->next;
+        while(deleting_node != NULL){
+            ListNode<T>* next_node = deleting_node->next;
+            delete deleting_node;
+            if(next_node == sentinel) break;
+            deleting_node = next_node;
+        }
+    }
+    delete sentinel;
 }
 
 #endif // _DEQUE_H

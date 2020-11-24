@@ -8,7 +8,7 @@
 #include "hash_funcs.hpp"
 
 #define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+#include "catch.hpp"
 
 #define LinearIntStrHt LinearProbeHashTable<int, std::string, DefaultHash>
 #define QuadIntStrHt QuadProbeHashTable<int, std::string, DefaultHash>
@@ -113,20 +113,20 @@ void rand_test(HT &htable) {
 
     generator.seed(0);
     for (auto i=0; i<=num_to_insert; i++) {
-      int k = distribution(generator);
-      std::string v = std::to_string(i);
-      htable.put(k, v);
+        int k = distribution(generator);
+        std::string v = std::to_string(i);
+        htable.put(k, v);
     }
 
     generator.seed(0);    
     for (auto i=0; i<=num_to_insert; i++) {
-      int k = distribution(generator);
-      std::string v;
-      int res = htable.get(k, v);
-      if (res >= 0) {
-        REQUIRE(v == std::to_string(i));
-        htable.remove(k);
-      }
+        int k = distribution(generator);
+        std::string v;
+        int res = htable.get(k, v);
+        if (res >= 0) {
+            REQUIRE(v == std::to_string(i));
+            htable.remove(k);
+        }
     }
 }
 

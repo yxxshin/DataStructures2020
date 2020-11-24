@@ -86,7 +86,7 @@ bool BTree<T, B>::insert(const T& t) {
 
     /* Make sure the root node is not full. Create an empty tree which has
        the original root as a child. Then split the original root. */
-    if (root->n >= 2 * B - 1) {
+    if (root->n == 2 * B - 1) {
         BTreeNode<T, B>* new_root = new BTreeNode<T, B>{};
         new_root->edges[0] = root;
         BTreeNode<T, B>::split_child(*new_root, 0);
@@ -129,7 +129,30 @@ const std::optional<size_t> BTree<T, B>::depth() const {
 template<typename T, size_t B>
 bool BTreeNode<T, B>::insert(const T& t) {
     // TODO
-    return false;
+    size_t loca = get_index(t);
+
+    if(type == NodeType::INTERNAL) {
+        if(edges[loca]->n == 2*B - 1){  // check
+            split_child(*this, loca);
+            loca = get_index(t);
+        }
+
+        return edges[loca]->insert(t);
+    }
+
+    else { // type == NodeType::LEAF
+        (this->n)++;
+        if(this->n >= 2){
+            for(size_t i = (this->n) - 2; i >= loca; i--){
+                keys[i+1] = keys[i];
+                if(i==0) break;
+            }
+        }
+        keys[loca] = t;
+        return true;
+    }
+
+    return true;
 }
 
 /**
@@ -149,7 +172,12 @@ bool BTreeNode<T, B>::insert(const T& t) {
 template<typename T, size_t B>
 size_t BTreeNode<T, B>::get_index(const T& t) {
     // TODO
-    return 0;
+    size_t temp = 0;
+    for(temp = 0; temp < n; temp++){
+        if(t < keys[temp])
+            break;
+    }
+    return temp;
 }
 
 template<typename T, size_t B>
@@ -188,11 +216,62 @@ void BTreeNode<T, B>::for_all_nodes(std::function<void(const BTreeNode<T,B>&)> f
     }
 }
 
-/* Assume this is called only when the child parent->edges[idx] is full, and
+/* Assume this is called only when the child parent.edges[idx] is full, and
    the parent is not full. */
 template<typename T, size_t B>
 void BTreeNode<T, B>::split_child(BTreeNode<T, B>& parent, size_t idx) {
     // TODO
+    parent.type = NodeType::INTERNAL;
+    BTreeNode<T, B>* full_node = parent.edges[idx];
+    T mid_val = full_node->keys[B-1];
+
+    BTreeNode<T, B>* front_node = new BTreeNode<T,B>{};
+    BTreeNode<T, B>* back_node = new BTreeNode<T,B>{};
+
+    for(size_t i = 0; i <= B-2; i++){
+        front_node->keys[i] = full_node->keys[i];
+        front_node->n++;
+    }
+
+    for(size_t i = B; i < 2*B-1; i++){
+        back_node->keys[i-B] = full_node->keys[i];
+        back_node->n++;
+    }
+
+    if(full_node->type == NodeType::INTERNAL){
+        front_node->type = NodeType::INTERNAL;
+        back_node->type = NodeType::INTERNAL;
+        for(size_t i = 0; i <= B-1; i++){
+            front_node->edges[i] = full_node->edges[i];
+        }
+        for(size_t i = B; i <= 2*B-1; i++){
+            back_node->edges[i-B] = full_node->edges[i];
+        }
+    }
+
+    parent.n ++;
+
+    if(parent.n >= 2){
+        for(size_t i = parent.n-2; i >= idx; i--){
+            parent.keys[i+1] = parent.keys[i];
+            if(i==0) break;
+        }
+    }
+
+    for(size_t i = parent.n-1; i >= idx+1; i--){
+        parent.edges[i+1] = parent.edges[i];
+        if(i==0) break;
+    }
+    parent.keys[idx] = mid_val;
+    parent.edges[idx+1] = back_node;
+    parent.edges[idx] = front_node;
+
+    if(full_node->type == NodeType::INTERNAL){
+        for(size_t i = 0; i <= 2*B-1; i++){
+            full_node->edges[i] = nullptr;
+        }
+    }
+    delete full_node;
 }
 
 template<typename T, size_t B>
@@ -209,14 +288,98 @@ bool BTree<T, B>::remove(const T& t) {
         prev_root->type = NodeType::LEAF;
         delete prev_root;
     }
-
     return true;
 }
 
 template<typename T, size_t B>
 bool BTreeNode<T, B>::remove(const T& t) {
     // TODO
-    return false;
+    // find index
+    size_t idx = 0;
+    while (idx < n && keys[idx] < t){
+        idx++;
+    }
+
+    // found node
+    if(idx < n && keys[idx] == t){
+        // if target is LEAF
+        if(type == NodeType::LEAF){
+            // remove from LEAF
+            for(size_t i = idx + 1; i < n; i++){
+                keys[i - 1] = keys[i];
+            }
+            n--;
+        }
+        else {  // if target is INTERNAL
+            // remove from INTERNAL
+            // Node is replaced by predecessor if left child has more keys than B
+            if(edges[idx]->n >= B){
+                // get predecessor
+                BTreeNode<T, B>* temp = edges[idx];
+                while(temp->type != NodeType::LEAF) {
+                    temp = temp->edges[temp->n];
+                }
+                T pred = temp->keys[temp->n - 1];
+                pred = temp->find_rightmost_key(*edges[idx]);
+                keys[idx] = pred;
+                edges[idx]->remove(pred);
+            }
+
+            // Node can also be replaced by successor if right child has more keys than B
+            else if(edges[idx+1]->n >= B){
+                // get successor
+                BTreeNode<T, B>* temp = edges[idx+1];
+                while(temp->type != NodeType::LEAF){
+                    temp = temp->edges[0];
+                }
+                T succ = temp->keys[0];
+                keys[idx] = succ;
+                edges[idx+1]->remove(succ);
+            }
+            
+            else {
+                merge_children(*this, idx);
+                edges[idx]->remove(t);
+            }
+        }
+    } 
+    // didn't find node
+    else {
+        // not existing in tree
+        if(type == NodeType::LEAF){
+            return false;
+        }
+
+        bool flag = ( (idx == n) ? true : false );
+
+        if(flag && idx > n) {
+            edges[idx - 1] -> remove(t);
+        }
+        else {
+            edges[idx] -> remove(t);
+        }
+
+        if(edges[idx]->n < B-1) {
+            // fill 
+            if(idx != 0 && edges[idx-1]->n >= B){
+                borrow_from_left(*this, idx);
+            }
+
+            else if(idx != n && edges[idx+1]->n >= B){
+                borrow_from_right(*this, idx);
+            }
+
+            else {
+                if(idx != n){
+                    merge_children(*this, idx);
+                }
+                else {
+                    merge_children(*this, idx - 1);
+                }
+            }
+        }
+    }
+    return true;
 }
 
 /**
@@ -234,19 +397,105 @@ bool BTreeNode<T, B>::try_borrow_from_sibling(BTreeNode<T, B>&node, size_t e) {
 template<typename T, size_t B>
 bool BTreeNode<T, B>::borrow_from_right(BTreeNode<T, B>& node, size_t edge) {
     // TODO
-    return false;
+    BTreeNode<T, B>* child = node.edges[edge];
+    BTreeNode<T, B>* sibling = node.edges[edge + 1];
+
+    // borrow
+    child->keys[child->n] = node.keys[edge];
+
+    if(child->type != NodeType::LEAF) {
+        child->edges[(child->n)+1] = sibling->edges[0];
+    }
+
+    node.keys[edge] = sibling->keys[0];
+
+    // filling space of sibling
+    for(size_t i = 1; i < sibling->n; i++){
+        sibling->keys[i-1] = sibling->keys[i];
+    }
+
+    if(sibling->type != NodeType::LEAF){
+        for(size_t i = 1; i <= sibling->n; i++){
+            sibling->edges[i - 1] = sibling->edges[i];
+        }
+    }
+
+    child->n++;
+    sibling->n--;
+    return true;
 }
 
 template<typename T, size_t B>
 bool BTreeNode<T, B>::borrow_from_left(BTreeNode<T, B>& node, size_t edge) {
     // TODO
-    return false;
+    BTreeNode<T, B>* child = node.edges[edge];
+    BTreeNode<T, B>* sibling = node.edges[edge-1];
+
+    // make space for child
+    if(child->n != 0){
+        for(size_t i = child->n - 1; i >= 0; i--) {
+            child->keys[i+1] = child->keys[i];
+            if(i == 0) break;
+        }
+    }
+
+    if(child->type != NodeType::LEAF){
+        for(size_t i = child->n; i >= 0; i--) {
+            child->edges[i+1] = child->edges[i];
+            if(i == 0) break;
+        }
+    }
+
+    // borrow!
+    child->keys[0] = node.keys[edge - 1];
+
+    if(child->type != NodeType::LEAF){
+        child->edges[0] = sibling->edges[sibling->n];
+    }
+
+    node.keys[edge - 1] = sibling->keys[sibling->n - 1];
+    child->n ++;
+    sibling->n --;
+    return true;
 }
 
 template<typename T, size_t B>
-bool BTreeNode<T, B>::merge_children(BTreeNode<T, B> & node, size_t idx) {
+bool BTreeNode<T, B>::merge_children(BTreeNode<T, B>& node, size_t idx) {
     // TODO
-    return false;
+    BTreeNode<T, B>* child = node.edges[idx];
+    BTreeNode<T, B>* sibling = node.edges[idx + 1];
+
+    child->keys[child->n] = node.keys[idx];
+    child->n++;
+
+    for (size_t i = 0; i < sibling->n; i++) {
+        size_t temp = child->n;
+        child->keys[i + temp] = sibling->keys[i];
+    }
+
+    if (child->type != NodeType::LEAF) {
+        for (size_t i = 0; i <= sibling->n; i++) {
+            size_t temp = child->n;
+            child->edges[i + temp] = sibling->edges[i];
+        }
+    }
+
+    for (size_t i = idx + 1; i < node.n; i++) {
+        node.keys[i - 1] = node.keys[i];
+    }
+    for (size_t i = idx + 2; i <= node.n; i++) {
+        node.edges[i - 1] = node.edges[i];
+    }
+    child->n += sibling->n;
+    node.n--;
+
+    if(sibling->type == NodeType::INTERNAL){
+        for(size_t i = 0; i <= sibling->n; i++){
+            sibling->edges[i] = nullptr;
+        }
+    }
+    delete sibling;
+    return true;
 }
 
 template<typename T, size_t B>
@@ -375,9 +624,11 @@ BTreeNode<T, B>::BTreeNode(InputIt begin, InputIt end)
 
 template<typename T, size_t B>
 BTreeNode<T, B>::~BTreeNode() {
-    if (this->type == NodeType::LEAF)
+    if (this->type == NodeType::LEAF) {
         return;
+    }
 
-    for (auto i = 0; i < n + 1; i++)
+    for (auto i = 0; i < n + 1; i++){
         if (edges[i]) delete edges[i];
+    }
 }
