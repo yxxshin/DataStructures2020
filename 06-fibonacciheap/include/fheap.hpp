@@ -108,38 +108,215 @@ class FibonacciHeap : public PriorityQueue<T> {
 template <typename T>
 FibonacciHeap<T>::~FibonacciHeap() {
     // TODO
+    size_t temp = size_;
+    for(size_t i = 0; i < temp; i++) {
+        extract_min();
+    }
 }
 
 template <typename T>
 std::optional<T> FibonacciHeap<T>::get_min() const {
     // TODO
-    return std::nullopt;
+    if(size_ == 0){
+        return std::nullopt;
+    }
+    else {
+        return min_node->key;
+    }
 }
 
 template <typename T>
 void FibonacciHeap<T>::insert(const T& item) {
     // TODO
+    std::shared_ptr<FibonacciNode<T>> insertNode = std::make_shared<FibonacciNode<T>>(item);
+    // initialization of insertNode
+    insertNode->left = insertNode;
+    insertNode->right = insertNode;
+    size_++;
+    // put insertNode and set min_node
+    if (min_node != nullptr) {
+        (min_node->left.lock())->right = insertNode;
+        insertNode->right = min_node;
+        insertNode->left = min_node->left;
+        min_node->left = insertNode;
+        if(insertNode->key < min_node->key) {
+            min_node = insertNode;
+        }
+    }
+    else {
+        min_node = insertNode;
+    }
+    
 }
 
 template <typename T>
 void FibonacciHeap<T>::insert(std::shared_ptr<FibonacciNode<T>>& node) {
     // TODO
+    if(min_node != nullptr) {
+        // set parents of min_node's childs
+        std::shared_ptr<FibonacciNode<T>> tempNode = node;       
+        std::shared_ptr<FibonacciNode<T>> temp = min_node->left.lock();
+        (min_node->left.lock())->right = node;
+        min_node->left = node->left;
+        (node->left.lock())->right = min_node;
+        node->left = temp;
+    } 
 }
 
 template <typename T>
 std::optional<T> FibonacciHeap<T>::extract_min() {
     // TODO
-    return std::nullopt;
+    if(min_node == nullptr) {
+        return std::nullopt;
+    }
+
+    if(size_ == 1){
+        T returnValue = min_node->key;
+        min_node->right.reset();
+        min_node->left.reset();
+        min_node.reset();
+        // min_node = nullptr;
+        size_--;
+        return returnValue;
+    }
+
+    // Heap is not empty
+    // Move min_node to any node in root
+    std::shared_ptr<FibonacciNode<T>> minNodeTemp = min_node;
+    T returnValue = min_node->key;
+
+    if(min_node->right == min_node) {
+        // min_node is the only root, but is going to be deleted
+        std::shared_ptr<FibonacciNode<T>> ttemp = min_node->child;
+        min_node = ttemp;
+        
+        // find the smallest node of ttemp's siblings
+        while(true) {
+            ttemp = ttemp->right;
+            if(ttemp == min_node) {
+                break;
+            }
+            if(ttemp->key < min_node->key) {
+                min_node = ttemp;
+            }
+        }
+    }
+    else {
+        min_node = min_node->right;
+        min_node->left = minNodeTemp->left;
+        (minNodeTemp->left.lock())->right = min_node;
+
+        // if min_node had childs, insert them
+        if(minNodeTemp->child != nullptr) {
+            insert(minNodeTemp->child);
+        }
+    }
+
+    minNodeTemp->right.reset();
+    minNodeTemp->left.reset();
+    minNodeTemp.reset();
+    // set min_node as the smallest among its siblings
+    std::shared_ptr<FibonacciNode<T>> min_temp = min_node;
+    while(true) {
+        min_temp = min_temp -> right;
+        if(min_temp == min_node) break;
+        if(min_temp->key < min_node->key)
+            min_node = min_temp;
+    }
+    
+    // settings for remaining root nodes
+    size_--;
+    
+    consolidate();
+
+    return returnValue;
 }
 
 template <typename T>
 void FibonacciHeap<T>::consolidate() {
     // TODO
+    // should set the array size as log n base phi + 1, but just setted as n * 2
+    // Array Initialization
+    size_t sizeArray = size_*2;
+    std::shared_ptr<FibonacciNode<T>>* array = new std::shared_ptr<FibonacciNode<T>>[sizeArray];
+    for(size_t i = 0; i < sizeArray; i++) {
+        array[i] = nullptr;
+    }
+
+    // Consolidate
+    std::shared_ptr<FibonacciNode<T>> thistempNode = min_node;  // main temp node
+    std::shared_ptr<FibonacciNode<T>> alreadyNode;      // node which is already in the array
+    std::shared_ptr<FibonacciNode<T>> swaptempNode;     // temp node used when swapping
+    std::shared_ptr<FibonacciNode<T>> preNode;          // next searching node
+
+    while(true) {
+        // set preNode at the first (b/c thistempNode's location might change)
+        preNode = thistempNode->right;
+        size_t thisDegree = thistempNode->degree;
+        // one cycle tour finish -> break
+        if (array[thisDegree] == thistempNode) {
+            break;
+        }
+        while(array[thisDegree] != nullptr) {
+            alreadyNode = array[thisDegree];
+            if(thistempNode->key >= alreadyNode->key && thistempNode != min_node) {
+                // swap two nodes so that thistempNode->key is always smaller than alreadyNode->key
+                swaptempNode = thistempNode;
+                thistempNode = alreadyNode;
+                alreadyNode = swaptempNode;
+            }
+            if(alreadyNode == min_node && alreadyNode->key > thistempNode->key) {
+                if(alreadyNode == preNode) {
+                    // preNode jump
+                    preNode = preNode -> right;
+                }
+                min_node = thistempNode;
+            }
+            // merge two nodes
+            merge(thistempNode, alreadyNode);
+
+            array[thisDegree] = nullptr;
+            thisDegree++;
+        }
+
+        // update array and degree
+        if(thistempNode->key < min_node->key) {
+            min_node = thistempNode;
+        }
+        array[thisDegree] = thistempNode;        
+        thistempNode = preNode;
+    }
+
+    delete[] array;
 }
 
 template <typename T>
 void FibonacciHeap<T>::merge(std::shared_ptr<FibonacciNode<T>>& x, std::shared_ptr<FibonacciNode<T>>& y) {
     // TODO
+    // y becomes a child of x
+    (y->right)->left = y->left;
+    (y->left.lock())->right = y->right;
+
+    // x has no siblings
+    if(x->right == x) {
+        min_node = x;
+    }
+
+    // connection
+    y->left = y;
+    y->right = y;
+    y->parent = x;
+    if(x->child == nullptr) {
+        x->child = y;
+    }
+    else {
+        y->right = x->child;
+        y->left = (x->child)->left;
+        ((x->child)->left.lock())->right = y;
+        (x->child)->left = y;
+    }
+
+    x->degree++;
 }
 
 #endif // __FHEAP_H_

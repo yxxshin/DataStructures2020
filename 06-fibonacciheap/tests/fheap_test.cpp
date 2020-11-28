@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
+// #include <catch2/catch.hpp>
 #include "fheap.hpp"
+#include "catch.hpp"
 #include <iostream>
 #include <queue>
 #include <vector>
