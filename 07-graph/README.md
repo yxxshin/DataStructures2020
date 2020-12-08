@@ -1,6 +1,6 @@
 # HW#7: Graph Algorithms
 
-* **Due date: 11:59pm, XX/XX/2020**
+* **Due date: 11:59pm, 12/18/2020**
 * TA: Sangyun Kim (ksu880@snu.ac.kr)
 
 ## Goals
@@ -120,7 +120,7 @@ Given a graph, topological sort finds the sorted sequence of vertices.
 Your task is to implement the function `topological_sort()` in
 `include/topological_sort.hpp`.
 
-* This function takes an input, a graph `g` and a source vertex `src`.
+* This function takes an input, a graph `g`.
 
 * This function returns a vector, having a sorted sequence of vertex
   ids.
