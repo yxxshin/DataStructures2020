@@ -1,6 +1,6 @@
 # HW#7: Graph Algorithms
 
-* **Due date: 11:59pm, 12/18/2020**
+* **Due date: 11:59pm, 12/18/2020** **(Late submissions are NOT ALLOWED!)**
 * TA: Sangyun Kim (ksu880@snu.ac.kr)
 
 ## Goals
