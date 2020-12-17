@@ -6,6 +6,8 @@
 #include <list>
 #include <tuple>
 
+#include "catch.hpp"
+
 /* Feel free to add more standard library headers */
 
 // A vertex is typed as `vertex_t`. An edge is typed as `edge_t`,
@@ -45,11 +47,31 @@ class Graph {
               const edges_t& edges,
               GraphType Type) {
             // TODO: Implement the constructor
+            this->num_vertices = num_vertices;
+            this->edges = edges;
+            this->Type = Type;
         }
-        // TODO(optional): Define helper functions, e.g., out_deges(v)
+        // TODO: (optional) Define helper functions, e.g., out_deges(v)
 		
+        // get graph's edges
+        edges_t get_edges() {
+            return edges;
+        }
+
+        // get graph's num_vertice
+        size_t get_num_vertices() {
+            return num_vertices;
+        }
+
+        GraphType get_type() {
+            return Type;
+        }
+
     private:
         // TODO: Roll out your own data structures
+        size_t num_vertices;
+        edges_t edges;
+        GraphType Type;
 };
 
 #endif // __GRAPH_H_
